@@ -4,11 +4,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.util.Log;
+import android.widget.Toast;
 
+import com.digits.sdk.android.AuthCallback;
 import com.digits.sdk.android.Digits;
+import com.digits.sdk.android.DigitsAuthButton;
+import com.digits.sdk.android.DigitsException;
+import com.digits.sdk.android.DigitsSession;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
 
@@ -35,18 +38,22 @@ public class PhoneVerification
 			return;
 		}
 
-		final EditText phoneNumberET = (EditText) findViewById(R.id.phoneNumber_editText);
-
-		Button continueBtn = (Button) findViewById(R.id.continue_btn);
-		continueBtn.setOnClickListener(new View.OnClickListener() {
+		DigitsAuthButton digitsButton = (DigitsAuthButton) findViewById(R.id.auth_button);
+		digitsButton.setCallback(new AuthCallback() {
 			@Override
-			public void onClick(View v) {
+			public void success(DigitsSession session, String phoneNumber) {
 				SharedPreferences.Editor editor = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE).edit();
-				editor.putString(Consts.PREF_PHONE_NUMBER, phoneNumberET.getText()
-				                                                        .toString());
+				editor.putString(Consts.PREF_PHONE_NUMBER, phoneNumber);
 				editor.apply();
-				MainActivity.start(v.getContext());
+				MainActivity.start(PhoneVerification.this);
 				finish();
+				Toast.makeText(getApplicationContext(), "Authentication successful for " + phoneNumber, Toast.LENGTH_LONG)
+				     .show();
+			}
+
+			@Override
+			public void failure(DigitsException exception) {
+				Log.e("Digits", "Sign in with Digits failure", exception);
 			}
 		});
 	}
