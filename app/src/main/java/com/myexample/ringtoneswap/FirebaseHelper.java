@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -138,8 +139,8 @@ public class FirebaseHelper {
 	    StorageReference storageRef = storage.getReferenceFromUrl(BUCKET_URL);
 	    StorageReference pathReference = storageRef.child(fileName);
 
-	    final File localFile = new File(context.getFilesDir(), fileName);
-	    pathReference.getFile(localFile)
+		final File localFile = new File(context.getExternalFilesDir(Environment.DIRECTORY_RINGTONES), fileName);
+		pathReference.getFile(localFile)
 	                 .addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
 		                 @Override
 		                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {

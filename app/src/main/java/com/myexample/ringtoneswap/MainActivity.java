@@ -1,6 +1,7 @@
 package com.myexample.ringtoneswap;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -10,6 +11,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -36,40 +38,49 @@ public class MainActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		Button getContactBtn = (Button) findViewById(R.id.getContactBtn);
+		final Button getContactBtn = (Button) findViewById(R.id.getContactBtn);
+
+		FirebaseHelper.getInstance()
+		              .init(new OnCompleteListener<AuthResult>() {
+			              @Override
+			              public void onComplete(@NonNull Task<AuthResult> task) {
+				              FirebaseHelper.getInstance()
+				                            .registerToRingtoneUpdates(getSelfPhoneNumber(), MainActivity.this);
+				              getContactBtn.setEnabled(true);
+			              }
+		              });
+
+		//check for needed permissions
+		requestPermissions();
+
 		getContactBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				FirebaseHelper.getInstance()
-				              .registerToRingtoneUpdates(getSelfPhoneNumber(), MainActivity.this);
 
 				startPickContactActivityForResult();
 			}
 		});
 
-		Button fileBtn = (Button) findViewById(R.id.getFileBtn);
-		fileBtn.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				startPickFileActivityForResult();
+	}
+
+	private void requestPermissions() {
+		if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+
+			if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.WRITE_CONTACTS)) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+				builder.setMessage("We need to access your contacts so that we can set ringtones to your friends");
+				builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						requestPermissions();
+					}
+				});
+				builder.show();
 			}
-		});
-
-		Button getSelfNumberBtn = (Button) findViewById(R.id.getSelfNumberBtn);
-		getSelfNumberBtn.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// Here, thisActivity is the current activity
-				if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-
-					ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_CONTACTS}, PERMISSION_WRITE_CONTACTS);
-				}
-				else {
-
-					getSelfPhoneNumber();
-				}
+			else {
+				ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_CONTACTS}, PERMISSION_WRITE_CONTACTS);
 			}
-		});
+		}
 	}
 
 	private String getSelfPhoneNumber() {
@@ -125,20 +136,12 @@ public class MainActivity
 				if (resultCode == RESULT_OK) {
 					Toast.makeText(this, data.getDataString(), Toast.LENGTH_SHORT)
 					     .show();
-					FirebaseHelper.getInstance()
-					              .init(new OnCompleteListener<AuthResult>() {
-						              @Override
-						              public void onComplete(@NonNull Task<AuthResult> task) {
-							              if (task.isSuccessful()) {
-								              try {
-									              FirebaseHelper.getInstance()
-									                            .uploadRingtone(getSelfPhoneNumber(), mPhoneNumber, getContentResolver().openInputStream(data.getData()));
-								              } catch (FileNotFoundException e) {
-									              e.printStackTrace();
-								              }
-							              }
-						              }
-					              });
+					try {
+						FirebaseHelper.getInstance()
+						              .uploadRingtone(getSelfPhoneNumber(), mPhoneNumber, getContentResolver().openInputStream(data.getData()));
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					}
 				}
 		}
 	}
