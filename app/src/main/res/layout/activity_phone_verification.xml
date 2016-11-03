@@ -14,6 +14,16 @@
     <com.digits.sdk.android.DigitsAuthButton
         android:id="@+id/auth_button"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"/>
+
+    <Button
+        android:id="@+id/selectContact_btn"
+        android:layout_below="@id/auth_button"
+        android:layout_marginTop="16dp"
+        android:visibility="invisible"
+        android:text="Lets do this!"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
 </RelativeLayout>
