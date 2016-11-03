@@ -11,19 +11,20 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.myexample.ringtoneswap.PhoneVerification">
 
-    <com.digits.sdk.android.DigitsAuthButton
+    <Button
         android:id="@+id/auth_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:enabled="false"/>
+        android:enabled="false"
+        android:text="Verify my phone number"/>
 
     <Button
         android:id="@+id/selectContact_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@id/auth_button"
         android:layout_marginTop="16dp"
-        android:visibility="invisible"
         android:text="Lets do this!"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:visibility="invisible"/>
 
 </RelativeLayout>

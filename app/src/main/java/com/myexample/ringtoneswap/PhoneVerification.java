@@ -22,8 +22,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.digits.sdk.android.AuthCallback;
+import com.digits.sdk.android.AuthConfig;
 import com.digits.sdk.android.Digits;
-import com.digits.sdk.android.DigitsAuthButton;
 import com.digits.sdk.android.DigitsException;
 import com.digits.sdk.android.DigitsSession;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -48,19 +48,20 @@ public class PhoneVerification
 	// Note: Your consumer key and secret should be obfuscated in your source code before shipping.
 	private static final String TWITTER_KEY    = "G46BtHLQIlx16buRCBDaEU4kE";
 	private static final String TWITTER_SECRET = "C21g5ncGknr2VOJbFKTFLi3VhqGAQ5xuxnutc6SdZnKkU5Nwtk";
-	private String           mPhoneNumber;
-	private DigitsAuthButton mDigitsButton;
-	private Button           mSelectContactBtn;
+	private String mPhoneNumber;
+	private Button mDigitsButton;
+	private Button mSelectContactBtn;
 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
-		Fabric.with(this, new TwitterCore(authConfig), new Digits.Builder().build());
+		Fabric.with(this, new TwitterCore(authConfig), new Digits.Builder().withTheme(R.style.AppTheme)
+		                                                                   .build());
 
 		setContentView(R.layout.activity_phone_verification);
-		mDigitsButton = (DigitsAuthButton) findViewById(R.id.auth_button);
+		mDigitsButton = (Button) findViewById(R.id.auth_button);
 		mSelectContactBtn = (Button) findViewById(R.id.selectContact_btn);
 
 
@@ -91,7 +92,8 @@ public class PhoneVerification
 			}
 		});
 
-		mDigitsButton.setCallback(new AuthCallback() {
+		//		mDigitsButton.setAuthTheme(R.style.AppTheme);
+		final AuthCallback authCallback = new AuthCallback() {
 			@Override
 			public void success(DigitsSession session, String selfPhoneNumber) {
 				SharedPreferences.Editor editor = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE).edit();
@@ -107,6 +109,15 @@ public class PhoneVerification
 			@Override
 			public void failure(DigitsException exception) {
 				Log.e("Digits", "Sign in with Digits failure", exception);
+			}
+		};
+
+		mDigitsButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				AuthConfig.Builder digitsAuthConfigBuilder = new AuthConfig.Builder().withAuthCallBack(authCallback);
+				Digits.authenticate(digitsAuthConfigBuilder.build());
+
 			}
 		});
 	}
