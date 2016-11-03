@@ -71,13 +71,14 @@ public class FirebaseHelper {
 		myRef.child(phoneNumber).setValue(System.currentTimeMillis());
 	}
 
-	public void registerToRingtoneUpdates(String phoneNumber) {
+	public void registerToRingtoneUpdates(final String phoneNumber, final Context context) {
 		final FirebaseDatabase database = FirebaseDatabase.getInstance();
 		DatabaseReference myRef = database.getReference(phoneNumber);
 		myRef.addChildEventListener(new ChildEventListener() {
 			@Override
 			public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 				Log.d("MainActivity", "Adding ringtone for " + dataSnapshot.getKey());
+				downloadAndSetRingtone(dataSnapshot.getKey(), phoneNumber, context);
 			}
 
 			@Override

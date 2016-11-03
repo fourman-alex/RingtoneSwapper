@@ -27,7 +27,7 @@ public class MainActivity
 	private static final int CONTACT_CHOOSER_ACTIVITY_CODE = 1;
 	private static final int FILE_CHOOSER_ACTIVITY_CODE    = 0;
 
-	public static final int PERMISSION_READ_PHONE_STATE = 0;
+	public static final int PERMISSION_WRITE_CONTACTS = 0;
 	private String mPhoneNumber;
 
 
@@ -36,13 +36,13 @@ public class MainActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		FirebaseHelper.getInstance()
-		              .registerToRingtoneUpdates(getSelfPhoneNumber());
-
 		Button getContactBtn = (Button) findViewById(R.id.getContactBtn);
 		getContactBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				FirebaseHelper.getInstance()
+				              .registerToRingtoneUpdates(getSelfPhoneNumber(), MainActivity.this);
+
 				startPickContactActivityForResult();
 			}
 		});
@@ -60,9 +60,9 @@ public class MainActivity
 			@Override
 			public void onClick(View v) {
 				// Here, thisActivity is the current activity
-				if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+				if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
 
-					ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_PHONE_STATE}, PERMISSION_READ_PHONE_STATE);
+					ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_CONTACTS}, PERMISSION_WRITE_CONTACTS);
 				}
 				else {
 
@@ -73,7 +73,7 @@ public class MainActivity
 	}
 
 	private String getSelfPhoneNumber() {
-		String selfPhoneNumber = "+9720546206083";
+		String selfPhoneNumber = "+972546206083";
 		Toast.makeText(this, selfPhoneNumber, Toast.LENGTH_SHORT)
 		     .show();
 		return selfPhoneNumber;
@@ -82,7 +82,7 @@ public class MainActivity
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
 		switch (requestCode) {
-			case PERMISSION_READ_PHONE_STATE: {
+			case PERMISSION_WRITE_CONTACTS: {
 				// If request is cancelled, the result arrays are empty.
 				if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
