@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "497616419453",
+    "firebase_url": "https://ringtonswapper.firebaseio.com",
+    "project_id": "ringtonswapper",
+    "storage_bucket": "ringtonswapper.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:497616419453:android:6b55bcd930c6e6e1",
+        "android_client_info": {
+          "package_name": "com.myexample.ringtoneswap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "497616419453-3eqk2o5gp622s7k94g069fv4fi1le7ep.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJwOQF7_9ysCot2XYX_fb5lyXj-Xzdnvc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
