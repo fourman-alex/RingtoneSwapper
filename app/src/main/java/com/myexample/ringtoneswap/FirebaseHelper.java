@@ -124,7 +124,7 @@ public class FirebaseHelper {
 	public void uploadRingtone(final String prankerPhoneNumber, final String prankeePhoneNumber, InputStream stream) throws
 			FileNotFoundException {
 
-		final String fileName = prankeePhoneNumber + "_" + prankerPhoneNumber + ".mp3";
+		final String fileName = prankeePhoneNumber + "_" + prankerPhoneNumber;
 
 		FirebaseStorage storage = FirebaseStorage.getInstance();
 		StorageReference storageRef = storage.getReferenceFromUrl(BUCKET_URL);
@@ -153,7 +153,7 @@ public class FirebaseHelper {
 
 	public void downloadAndSetRingtone(final String prankerPhoneNumber, String prankeePhoneNumber, final Context context) {
 
-		final String fileName = prankeePhoneNumber + "_" + prankerPhoneNumber + ".mp3";
+		final String fileName = prankeePhoneNumber + "_" + prankerPhoneNumber;
 		FirebaseStorage storage = FirebaseStorage.getInstance();
 		StorageReference storageRef = storage.getReferenceFromUrl(BUCKET_URL);
 		StorageReference pathReference = storageRef.child(fileName);
