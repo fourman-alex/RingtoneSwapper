@@ -2,6 +2,7 @@ package com.myexample.ringtoneswap;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
@@ -34,16 +35,17 @@ public class FirebaseHelper {
 	private static final String BUCKET_URL = "gs://ringtonswapper.appspot.com";
 	private static FirebaseHelper sFirebaseHelper;
 
-	public static FirebaseHelper getInstance(){
-		if (sFirebaseHelper == null)
+	public static FirebaseHelper getInstance() {
+		if (sFirebaseHelper == null) {
 			sFirebaseHelper = new FirebaseHelper();
+		}
 
 		return sFirebaseHelper;
 	}
 
-	private FirebaseHelper(){}
+	private FirebaseHelper() {}
 
-	public void init(OnCompleteListener<AuthResult> onCompleteListener){
+	public void init(OnCompleteListener<AuthResult> onCompleteListener) {
 		FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 		FirebaseAuth.AuthStateListener authListener = new FirebaseAuth.AuthStateListener() {
 			@Override
@@ -63,28 +65,43 @@ public class FirebaseHelper {
 		firebaseAuth.addAuthStateListener(authListener);
 
 		firebaseAuth.signInAnonymously()
-		    .addOnCompleteListener(onCompleteListener);
+		            .addOnCompleteListener(onCompleteListener);
 	}
 
-	public void addNewUser(String phoneNumber){
+	public void addNewUser(String phoneNumber) {
 		FirebaseDatabase database = FirebaseDatabase.getInstance();
 		DatabaseReference myRef = database.getReference();
-		myRef.child(phoneNumber).setValue(System.currentTimeMillis());
+		myRef.child(phoneNumber)
+		     .setValue(System.currentTimeMillis());
 	}
 
-	public void registerToRingtoneUpdates(final String phoneNumber, final Context context) {
+	public void registerToRingtoneUpdates(final String selfPhoneNumber, final Context context) {
 		final FirebaseDatabase database = FirebaseDatabase.getInstance();
-		DatabaseReference myRef = database.getReference(phoneNumber);
+		DatabaseReference myRef = database.getReference(selfPhoneNumber);
 		myRef.addChildEventListener(new ChildEventListener() {
 			@Override
 			public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-				Log.d("MainActivity", "Adding ringtone for " + dataSnapshot.getKey());
-				downloadAndSetRingtone(dataSnapshot.getKey(), phoneNumber, context);
+				String friendPhoneNumber = dataSnapshot.getKey();
+				Long timestamp = dataSnapshot.getValue(Long.class);
+				SharedPreferences sharedPreferences = context.getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, Context.MODE_PRIVATE);
+				long localTimestamp = sharedPreferences.getLong(friendPhoneNumber, -1);
+				if (localTimestamp < timestamp) {
+					downloadAndSetRingtone(friendPhoneNumber, selfPhoneNumber, context);
+					SharedPreferences.Editor editor = sharedPreferences.edit();
+					editor.putLong(friendPhoneNumber, timestamp);
+					editor.apply();
+				}
 			}
 
 			@Override
 			public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-				Log.d("MainActivity", "Updating ringtone for " + dataSnapshot.getKey() + "; timestamp: " + dataSnapshot.getValue(Long.class));
+				String friendPhoneNumber = dataSnapshot.getKey();
+				Long timestamp = dataSnapshot.getValue(Long.class);
+				downloadAndSetRingtone(friendPhoneNumber, selfPhoneNumber, context);
+				SharedPreferences sharedPreferences = context.getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, Context.MODE_PRIVATE);
+				SharedPreferences.Editor editor = sharedPreferences.edit();
+				editor.putLong(friendPhoneNumber, timestamp);
+				editor.apply();
 			}
 
 			@Override
@@ -120,52 +137,53 @@ public class FirebaseHelper {
 				Log.d("uploadRingtone", "upload failed");
 				exception.printStackTrace();
 			}
-		}).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-			@Override
-			public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-				FirebaseDatabase database = FirebaseDatabase.getInstance();
-				DatabaseReference myRef = database.getReference(prankeePhoneNumber);
-				myRef.child(prankerPhoneNumber).setValue(System.currentTimeMillis());
+		})
+		          .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+			          @Override
+			          public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+				          FirebaseDatabase database = FirebaseDatabase.getInstance();
+				          DatabaseReference myRef = database.getReference(prankeePhoneNumber);
+				          myRef.child(prankerPhoneNumber)
+				               .setValue(System.currentTimeMillis());
 
-			}
-		});
+			          }
+		          });
 
 	}
 
 	public void downloadAndSetRingtone(final String prankerPhoneNumber, String prankeePhoneNumber, final Context context) {
 
 		final String fileName = prankeePhoneNumber + "_" + prankerPhoneNumber + ".mp3";
-	    FirebaseStorage storage = FirebaseStorage.getInstance();
-	    StorageReference storageRef = storage.getReferenceFromUrl(BUCKET_URL);
-	    StorageReference pathReference = storageRef.child(fileName);
+		FirebaseStorage storage = FirebaseStorage.getInstance();
+		StorageReference storageRef = storage.getReferenceFromUrl(BUCKET_URL);
+		StorageReference pathReference = storageRef.child(fileName);
 
 		final File localFile = new File(context.getExternalFilesDir(Environment.DIRECTORY_RINGTONES), fileName);
 		pathReference.getFile(localFile)
-	                 .addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-		                 @Override
-		                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-			                 Log.d("downloadRingtone", "Download success");
-							setRingtone(prankerPhoneNumber, localFile, context);
-		                 }
-	                 })
-	                 .addOnFailureListener(new OnFailureListener() {
-		                 @Override
-		                 public void onFailure(@NonNull Exception exception) {
-			                 Log.d("downloadRingtone", "Download failed");
-			                 exception.printStackTrace();
-		                 }
-	                 });
+		             .addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+			             @Override
+			             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+				             Log.d("downloadRingtone", "Download success");
+				             setRingtone(prankerPhoneNumber, localFile, context);
+			             }
+		             })
+		             .addOnFailureListener(new OnFailureListener() {
+			             @Override
+			             public void onFailure(@NonNull Exception exception) {
+				             Log.d("downloadRingtone", "Download failed");
+				             exception.printStackTrace();
+			             }
+		             });
 	}
 
-	public void setRingtone(String phoneNumber, File ringtone, Context context){
+	public void setRingtone(String phoneNumber, File ringtone, Context context) {
 		// The Uri used to look up a contact by phone number
 		final Uri lookupUri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, phoneNumber);
 		// The columns used for `Contacts.getLookupUri`
-		final String[] projection = new String[] {
-				ContactsContract.Contacts._ID, ContactsContract.Contacts.LOOKUP_KEY
-		};
+		final String[] projection = new String[]{ContactsContract.Contacts._ID, ContactsContract.Contacts.LOOKUP_KEY};
 		// Build your Cursor
-		final Cursor data = context.getContentResolver().query(lookupUri, projection, null, null, null);
+		final Cursor data = context.getContentResolver()
+		                           .query(lookupUri, projection, null, null, null);
 		data.moveToFirst();
 		try {
 			// Get the contact lookup Uri
@@ -177,12 +195,14 @@ public class FirebaseHelper {
 				return;
 			}
 
-			final String value = Uri.fromFile(ringtone).toString();
+			final String value = Uri.fromFile(ringtone)
+			                        .toString();
 
 			// Apply the custom ringtone
 			final ContentValues values = new ContentValues(1);
 			values.put(ContactsContract.Contacts.CUSTOM_RINGTONE, value);
-			context.getContentResolver().update(contactUri, values, null, null);
+			context.getContentResolver()
+			       .update(contactUri, values, null, null);
 		} finally {
 			// Don't forget to close your Cursor
 			data.close();

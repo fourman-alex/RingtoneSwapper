@@ -1,6 +1,7 @@
 package com.myexample.ringtoneswap;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -32,6 +34,10 @@ public class MainActivity
 	public static final int PERMISSION_WRITE_CONTACTS = 0;
 	private String mPhoneNumber;
 
+	public static void start(Context context) {
+		Intent starter = new Intent(context, MainActivity.class);
+		context.startActivity(starter);
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,10 +90,12 @@ public class MainActivity
 	}
 
 	private String getSelfPhoneNumber() {
-		String selfPhoneNumber = "+972546206083";
-		Toast.makeText(this, selfPhoneNumber, Toast.LENGTH_SHORT)
-		     .show();
-		return selfPhoneNumber;
+
+		String phoneNumber = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE).getString(Consts.PREF_PHONE_NUMBER, null);
+		if (TextUtils.isEmpty(phoneNumber)) {
+			throw new RuntimeException("Phone number is missing");
+		}
+		return phoneNumber;
 	}
 
 	@Override

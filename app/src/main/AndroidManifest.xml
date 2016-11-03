@@ -12,12 +12,19 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
+        </activity>
+        <activity android:name=".PhoneVerification">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="842ca124acbf7b50e396e9fedd95705bfcd97f4b"/>
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
