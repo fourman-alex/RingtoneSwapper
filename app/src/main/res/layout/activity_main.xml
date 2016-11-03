@@ -24,4 +24,23 @@
         android:layout_below="@+id/textView"
         android:layout_alignParentStart="true"
         android:id="@+id/getContactBtn"/>
+
+    <Button
+        android:text="Get my phone number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/getContactBtn"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:id="@+id/getSelfNumberBtn"/>
+
+    <Button
+        android:text="Get file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/getSelfNumberBtn"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="19dp"
+        android:id="@+id/getFileBtn"/>
 </RelativeLayout>

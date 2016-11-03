@@ -25,7 +25,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
@@ -103,7 +102,7 @@ public class FirebaseHelper {
 		});
 	}
 
-	public void uploadRingtone(final String prankerPhoneNumber, final String prankeePhoneNumber, File ringtone) throws
+	public void uploadRingtone(final String prankerPhoneNumber, final String prankeePhoneNumber, InputStream stream) throws
 			FileNotFoundException {
 
 		final String fileName = prankeePhoneNumber + "_" + prankerPhoneNumber + ".mp3";
@@ -112,7 +111,6 @@ public class FirebaseHelper {
 		StorageReference storageRef = storage.getReferenceFromUrl(BUCKET_URL);
 		StorageReference pathReference = storageRef.child(fileName);
 
-		InputStream stream = new FileInputStream(ringtone);
 		UploadTask uploadTask = pathReference.putStream(stream);
 		uploadTask.addOnFailureListener(new OnFailureListener() {
 			@Override
