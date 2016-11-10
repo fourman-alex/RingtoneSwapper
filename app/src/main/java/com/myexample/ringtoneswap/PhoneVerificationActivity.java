@@ -9,35 +9,19 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.digits.sdk.android.AuthCallback;
-import com.digits.sdk.android.AuthConfig;
-import com.digits.sdk.android.Digits;
-import com.digits.sdk.android.DigitsException;
-import com.digits.sdk.android.DigitsSession;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.twitter.sdk.android.core.TwitterAuthConfig;
-import com.twitter.sdk.android.core.TwitterCore;
-
 import java.io.FileNotFoundException;
 
-import io.fabric.sdk.android.Fabric;
 
-
-public class PhoneVerification
+public class PhoneVerificationActivity
 		extends AppCompatActivity {
 
 	private static final int CONTACT_CHOOSER_ACTIVITY_CODE = 1;
@@ -46,44 +30,24 @@ public class PhoneVerification
 	public static final int PERMISSION_WRITE_CONTACTS = 0;
 
 	// Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-	private static final String TWITTER_KEY    = "G46BtHLQIlx16buRCBDaEU4kE";
-	private static final String TWITTER_SECRET = "C21g5ncGknr2VOJbFKTFLi3VhqGAQ5xuxnutc6SdZnKkU5Nwtk";
 	private String mPhoneNumber;
-	private Button mDigitsButton;
+	private Button mAuthButton;
 	private Button mSelectContactBtn;
 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
-		Fabric.with(this, new TwitterCore(authConfig), new Digits.Builder().withTheme(R.style.AppTheme)
-		                                                                   .build());
 
 		setContentView(R.layout.activity_phone_verification);
-		mDigitsButton = (Button) findViewById(R.id.auth_button);
+		mAuthButton = (Button) findViewById(R.id.auth_button);
 		mSelectContactBtn = (Button) findViewById(R.id.selectContact_btn);
 
-
-		//init firebase
-		FirebaseHelper.getInstance()
-		              .init(new OnCompleteListener<AuthResult>() {
-			              @Override
-			              public void onComplete(@NonNull Task<AuthResult> task) {
-				              if (task.isSuccessful()) {
-					              mDigitsButton.setEnabled(true);
-					              final SharedPreferences sharedPreferences = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE);
-					              String selfPhoneNumber = sharedPreferences.getString(Consts.PREF_PHONE_NUMBER, null);
-					              if (!TextUtils.isEmpty(selfPhoneNumber)) {
-						              requestPermissions(PhoneVerification.this);
-					              }
-				              }
-				              else {
-					              Snackbar.make(findViewById(R.id.activity_phone_verification), "Uh Oh...", Snackbar.LENGTH_LONG)
-					                      .show();
-				              }
-			              }
-		              });
+		final SharedPreferences sharedPreferences = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE);
+		String selfPhoneNumber = sharedPreferences.getString(Consts.PREF_PHONE_NUMBER, null);
+		if (!TextUtils.isEmpty(selfPhoneNumber)) {
+			requestPermissions(PhoneVerificationActivity.this);
+		}
 
 		mSelectContactBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -92,32 +56,25 @@ public class PhoneVerification
 			}
 		});
 
-		//		mDigitsButton.setAuthTheme(R.style.AppTheme);
-		final AuthCallback authCallback = new AuthCallback() {
-			@Override
-			public void success(DigitsSession session, String selfPhoneNumber) {
-				SharedPreferences.Editor editor = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE).edit();
-				editor.putString(Consts.PREF_PHONE_NUMBER, selfPhoneNumber);
-				editor.apply();
-				mDigitsButton.setEnabled(false);
-				requestPermissions(PhoneVerification.this);
-
-				Snackbar.make(findViewById(R.id.activity_phone_verification), "Authentication successful for " + selfPhoneNumber, Snackbar.LENGTH_LONG)
-				        .show();
-			}
-
-			@Override
-			public void failure(DigitsException exception) {
-				Log.e("Digits", "Sign in with Digits failure", exception);
-			}
-		};
-
-		mDigitsButton.setOnClickListener(new View.OnClickListener() {
+		mAuthButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				AuthConfig.Builder digitsAuthConfigBuilder = new AuthConfig.Builder().withAuthCallBack(authCallback);
-				Digits.authenticate(digitsAuthConfigBuilder.build());
+				new AuthMechanismImpl().authenticate(new AuthMechanism.AuthCallback() {
+					@Override
+					public void onSuccess(String selfPhoneNumber) {
+						SharedPreferences.Editor editor = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE).edit();
+						editor.putString(Consts.PREF_PHONE_NUMBER, selfPhoneNumber);
+						editor.apply();
+						mAuthButton.setEnabled(false);
+						requestPermissions(PhoneVerificationActivity.this);
+						// TODO: 10-Nov-16 request permissions to write contacts! when?
+					}
 
+					@Override
+					public void onFailure() {
+
+					}
+				});
 			}
 		});
 	}
@@ -144,12 +101,12 @@ public class PhoneVerification
 	}
 
 	private void onPermissionGranted() {
-		mDigitsButton.setEnabled(false);
+		mAuthButton.setEnabled(false);
 		mSelectContactBtn.setVisibility(View.VISIBLE);
 		final SharedPreferences sharedPreferences = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE);
 		String selfPhoneNumber = sharedPreferences.getString(Consts.PREF_PHONE_NUMBER, null);
 		FirebaseHelper.getInstance()
-		              .registerToRingtoneUpdates(selfPhoneNumber, PhoneVerification.this);
+		              .registerToRingtoneUpdates(selfPhoneNumber, PhoneVerificationActivity.this);
 	}
 
 	@Override

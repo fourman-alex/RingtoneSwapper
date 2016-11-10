@@ -64,6 +64,7 @@ public class FirebaseHelper {
 
 		firebaseAuth.addAuthStateListener(authListener);
 
+
 		firebaseAuth.signInAnonymously()
 		            .addOnCompleteListener(onCompleteListener);
 	}
