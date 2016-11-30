@@ -47,6 +47,7 @@ dependencies {
     compile 'com.google.firebase:firebase-storage:9.8.0'
     compile 'com.google.firebase:firebase-auth:9.8.0'
     compile 'com.google.firebase:firebase-database:9.8.0'
+    compile 'com.google.firebase:firebase-messaging:9.8.0'
     //other
     compile 'com.android.support:design:24.2.1'
 

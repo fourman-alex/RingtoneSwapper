@@ -9,14 +9,21 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.FileNotFoundException;
 
@@ -62,13 +69,16 @@ public class PhoneVerificationActivity
 				new AuthMechanismImpl().authenticate(new AuthMechanism.AuthCallback() {
 					@Override
 					public void onSuccess(String selfPhoneNumber) {
+						FirebaseMessaging.getInstance()
+						                 .subscribeToTopic(selfPhoneNumber);
+
 						SharedPreferences.Editor editor = getSharedPreferences(Consts.SHAREDPREF_RINGTONESWAP, MODE_PRIVATE).edit();
 						editor.putString(Consts.PREF_PHONE_NUMBER, selfPhoneNumber);
 						editor.apply();
-						mAuthButton.setEnabled(false);
-						requestPermissions(PhoneVerificationActivity.this);
-						// TODO: 10-Nov-16 request permissions to write contacts! when?
-					}
+							mAuthButton.setEnabled(false);
+							requestPermissions(PhoneVerificationActivity.this);
+							// TODO: 10-Nov-16 request permissions to write contacts! when?
+						}
 
 					@Override
 					public void onFailure() {

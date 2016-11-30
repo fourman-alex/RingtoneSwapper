@@ -27,7 +27,7 @@ public class AuthMechanismImpl
 
 				//sign in to firebase
 				FirebaseAuth.getInstance()
-				            .signInWithCustomToken(session.getAuthToken().token)
+				            .signInAnonymously()
 				            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
 					            @Override
 					            public void onComplete(@NonNull Task<AuthResult> task) {
