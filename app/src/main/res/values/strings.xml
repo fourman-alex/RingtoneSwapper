@@ -1,4 +1,8 @@
 <resources>
-    <string name="app_name">Ringtone Swapper</string>
     <string name="app_title">Make Them Cry</string>
+    <string name="app_name">Alori</string>
+    <!--Facebook auth stuff-->
+    <string name="app_id">137986963403208</string>
+    <string name="client_token">076a7e84498fe60417c994b49179511c</string>
+
 </resources>

@@ -12,6 +12,8 @@
 
     </style>
 
+    <style name="AppLoginTheme" parent="Theme.AccountKit"/>
+
     <style name="AppButton" parent="Widget.AppCompat.Button.Colored">
         <item name="android:textColor">@color/colored_button_text_color</item>
         <item name="android:minHeight">120dp</item>
